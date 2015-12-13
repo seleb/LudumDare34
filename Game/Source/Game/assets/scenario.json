@@ -1,0 +1,9 @@
+{
+  "assets": [
+    {
+      "id": "CURSOR",
+      "type": "texture",
+      "src": "../engine basics/cursor.png"
+    }
+  ]
+}
