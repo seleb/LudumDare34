@@ -11,6 +11,7 @@ class MousePerspectiveCamera;
 class Box2DWorld;
 class Box2DDebugDrawer;
 class Box2DMeshEntity;
+class Box2DSprite;
 class MeshEntity;
 
 class ShaderComponentHsv;
@@ -26,6 +27,8 @@ class PointLight;
 class BulletMeshEntity;
 class ComponentShaderText;
 
+#define NUM_SIZES 9
+
 class MY_Scene : public Scene{
 public:
 	Shader * screenSurfaceShader;
@@ -39,7 +42,7 @@ public:
 	BulletWorld * bulletWorld;
 	BulletDebugDrawer * debugDrawer;
 	
-	MousePerspectiveCamera * playerCam;
+	OrthographicCamera * playerCam;
 	
 	Sprite * mouseIndicator;
 	Sprite * crosshair;
@@ -58,4 +61,9 @@ public:
 
 	MY_Scene(Game * _game);
 	~MY_Scene();
+
+
+	unsigned long int playerSize;
+	Box2DSprite * player;
+	Box2DSprite * ground;
 };
