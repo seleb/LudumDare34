@@ -6,6 +6,11 @@
       "src": "../engine basics/cursor.png"
     },
     {
+      "id": "GROUND",
+      "type": "textureSampler",
+      "src": "floor.png.def"
+    },
+    {
       "id": "DUDE",
       "type": "textureSampler",
       "src": "dude.png.def"
@@ -14,6 +19,16 @@
       "id": "DUDE-ANIMATION",
       "type": "texture",
       "src": "dude-animation.png"
+    },
+    {
+      "id": "BUTTONS",
+      "type": "texture",
+      "src": "buttons.png"
+    },
+    {
+      "id": "BUTTON-BASE",
+      "type": "textureSampler",
+      "src": "buttonBase.png.def"
     }
   ]
 }

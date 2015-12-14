@@ -36,7 +36,7 @@ public:
 	StandardFrameBuffer * screenFBO;
 	
 	ComponentShaderBase * baseShader;
-	ComponentShaderBase * characterShader;
+	ComponentShaderBase * worldspaceShader;
 	ComponentShaderText * textShader;
 
 	BulletWorld * bulletWorld;
@@ -47,6 +47,8 @@ public:
 	Sprite * mouseIndicator;
 	Sprite * crosshair;
 	MousePerspectiveCamera * debugCam;
+	Light * light;
+	bool moving, giveUp;
 
 	Box2DWorld * box2dWorld;
 	Box2DDebugDrawer * box2dDebug;
@@ -58,6 +60,8 @@ public:
 	virtual void unload() override;
 
 	UILayer uiLayer;
+	Sprite * xButton;
+	Sprite * zButton;
 
 	MY_Scene(Game * _game);
 	~MY_Scene();
