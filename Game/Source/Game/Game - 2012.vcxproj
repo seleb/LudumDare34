@@ -11,12 +11,16 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\DrownyDude.cpp" />
+    <ClCompile Include="src\Flag.cpp" />
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\MY_Game.cpp" />
     <ClCompile Include="src\MY_ResourceManager.cpp" />
     <ClCompile Include="src\MY_Scene.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\DrownyDude.h" />
+    <ClInclude Include="include\Flag.h" />
     <ClInclude Include="include\MY_Game.h" />
     <ClInclude Include="include\MY_ResourceManager.h" />
     <ClInclude Include="include\MY_Scene.h" />

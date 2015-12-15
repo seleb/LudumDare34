@@ -29,6 +29,26 @@
       "id": "BUTTON-BASE",
       "type": "textureSampler",
       "src": "buttonBase.png.def"
+    },
+    {
+      "id": "DROWNY",
+      "type": "texture",
+      "src": "drowny.png"
+    },
+    {
+      "id": "FLAG",
+      "type": "texture",
+      "src": "flag.png"
+    },
+    {
+      "id": "END",
+      "type": "texture",
+      "src": "end.png"
+    },
+    {
+      "id": "INTRO",
+      "type": "texture",
+      "src": "instructions.png"
     }
   ]
 }

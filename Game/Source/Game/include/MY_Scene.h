@@ -4,6 +4,7 @@
 #include <UILayer.h>
 #include <BulletDebugDrawer.h>
 #include <BulletWorld.h>
+#include <Flag.h>
 
 class PerspectiveCamera;
 class MousePerspectiveCamera;
@@ -27,7 +28,8 @@ class PointLight;
 class BulletMeshEntity;
 class ComponentShaderText;
 
-#define NUM_SIZES 9
+#define NUM_SIZES 11
+#define DISTANCE 200
 
 class MY_Scene : public Scene{
 public:
@@ -38,6 +40,8 @@ public:
 	ComponentShaderBase * baseShader;
 	ComponentShaderBase * worldspaceShader;
 	ComponentShaderText * textShader;
+	ShaderComponentHsv * hsvComponent1;
+	ShaderComponentHsv * hsvComponent2;
 
 	BulletWorld * bulletWorld;
 	BulletDebugDrawer * debugDrawer;
@@ -47,7 +51,7 @@ public:
 	Sprite * mouseIndicator;
 	Sprite * crosshair;
 	MousePerspectiveCamera * debugCam;
-	Light * light;
+	PointLight * light;
 	bool moving, giveUp;
 
 	Box2DWorld * box2dWorld;
@@ -62,12 +66,15 @@ public:
 	UILayer uiLayer;
 	Sprite * xButton;
 	Sprite * zButton;
+	Flag * flag;
+	NodeUI * images;
 
 	MY_Scene(Game * _game);
 	~MY_Scene();
 
 
 	unsigned long int playerSize;
+	bool lowered;
 	Box2DSprite * player;
 	Box2DSprite * ground;
 };

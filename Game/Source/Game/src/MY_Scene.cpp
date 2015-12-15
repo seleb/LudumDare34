@@ -18,6 +18,7 @@
 #include <shader\ShaderComponentText.h>
 #include <shader\ShaderComponentTexture.h>
 #include <shader\ShaderComponentDiffuse.h>
+#include <shader\ShaderComponentHsv.h>
 #include <Material.h>
 #include <shader\ShaderComponentHsv.h>
 #include <shader\ShaderComponentMVP.h>
@@ -50,6 +51,7 @@
 #include <TextArea.h>
 #include <Box2DWorld.h>
 #include <Box2DDebugDrawer.h>
+#include <DrownyDude.h>
 
 #include <RenderOptions.h>
 
@@ -68,9 +70,14 @@ MY_Scene::MY_Scene(Game * _game) :
 	moving(false),
 	giveUp(false)
 {
+	hsvComponent1 = new ShaderComponentHsv(baseShader, 0, 1, 1);
+	hsvComponent2 = new ShaderComponentHsv(worldspaceShader, 0, 1, 1);
+
+
 	baseShader->addComponent(new ShaderComponentMVP(baseShader));
 	baseShader->addComponent(new ShaderComponentTexture(baseShader));
 	baseShader->addComponent(new ShaderComponentDiffuse(baseShader));
+	baseShader->addComponent(hsvComponent1);
 	baseShader->compileShader();
 
 	
@@ -81,6 +88,7 @@ MY_Scene::MY_Scene(Game * _game) :
 	uvComponent->yMultiplier = 0.005f;
 	worldspaceShader->addComponent(uvComponent);
 	worldspaceShader->addComponent(new ShaderComponentDiffuse(worldspaceShader));
+	worldspaceShader->addComponent(hsvComponent2);
 	worldspaceShader->compileShader();
 
 	textShader->textComponent->setColor(glm::vec3(0.0f, 0.0f, 0.0f));
@@ -120,12 +128,13 @@ MY_Scene::MY_Scene(Game * _game) :
 
 	SpriteSheet * dudeSpriteSheet = new SpriteSheet(MY_ResourceManager::scenario->getTexture("DUDE-ANIMATION")->texture);
 	for(unsigned long int i = 0; i < NUM_SIZES; ++i){
+		float pingPonged = (float)sweet::NumberUtils::pingPong(i*2, 1, NUM_SIZES)/NUM_SIZES;
 		std::stringstream ss;
 		ss << "IDLE_" << (i+1);
 		dudeSpriteSheet->addAnimation(ss.str(), i*4, i*4, 16, 16, 1);
 		ss.str(""); // clear
 		ss << "RUN_" << (i+1);
-		dudeSpriteSheet->addAnimation(ss.str(), i*4, i*4+3, 16, 16, 0.16f);
+		dudeSpriteSheet->addAnimation(ss.str(), i*4, i*4+3, 16, 16, (1.f-pingPonged*0.5f)*0.25f+0.01f);
 	}
 
 	ground = new Box2DSprite(box2dWorld, MY_ResourceManager::scenario->getTextureSampler("GROUND")->textureSampler, b2_staticBody, worldspaceShader);
@@ -144,14 +153,25 @@ MY_Scene::MY_Scene(Game * _game) :
 	player->mesh->setScaleMode(GL_NEAREST);
 	player->setSpriteSheet(dudeSpriteSheet, "IDLE_1");
 	player->createFixture();
+	player->setTranslationPhysical(0, 8, 0);
 
 	playerSize = 1;
 
+
+
+	/*for(unsigned long int i = 0; i < 5; ++i){
+		DrownyDude * dd = new DrownyDude(box2dWorld, baseShader);
+
+		dd->setTranslationPhysical(sweet::NumberUtils::randomInt(-3, 3), 0, 0);
+		childTransform->addChild(dd);
+	}*/
+
+
 	
-	PointLight * light1 = new PointLight(glm::vec3(2), 0, 0.001f, -1.f);
-	lights.push_back(light1);
-	player->meshTransform->addChild(light1);
-	light1->firstParent()->translate(0, 0, 10);
+	light = new PointLight(glm::vec3(1), 0.f, 0.001f, -1.f);
+	lights.push_back(light);
+	player->meshTransform->addChild(light);
+	light->firstParent()->translate(0, -8, 10);
 	
 	SpriteSheet * buttonSpriteSheet = new SpriteSheet(MY_ResourceManager::scenario->getTexture("BUTTONS")->texture);
 	buttonSpriteSheet->addAnimation("X_UP", 0, 0, 16, 16, 1);
@@ -163,17 +183,19 @@ MY_Scene::MY_Scene(Game * _game) :
 	zButton = new Sprite(uiLayer.shader);
 	xButton->setPrimaryTexture(MY_ResourceManager::scenario->getTextureSampler("BUTTON-BASE")->textureSampler);
 	zButton->setPrimaryTexture(MY_ResourceManager::scenario->getTextureSampler("BUTTON-BASE")->textureSampler);
-	xButton->childTransform->scale(16);
-	zButton->childTransform->scale(16);
+	xButton->childTransform->scale(32);
+	zButton->childTransform->scale(32);
 	xButton->setSpriteSheet(buttonSpriteSheet, "X_UP");
 	zButton->setSpriteSheet(buttonSpriteSheet, "Z_UP");
 	xButton->mesh->setScaleMode(GL_NEAREST);
 	zButton->mesh->setScaleMode(GL_NEAREST);
 
-	NodeUI * l = new NodeUI(uiLayer.world);
-	l->setRationalHeight(1.f);
-	l->setRationalWidth(1.f);
-	l->background->setVisible(false);
+	images = new NodeUI(uiLayer.world);
+	images->setRationalHeight(1.f);
+	images->setRationalWidth(1.f);
+	images->setBackgroundColour(1,1,1,1);
+	images->background->mesh->pushTexture2D(MY_ResourceManager::scenario->getTexture("INTRO")->texture);
+	images->background->mesh->setScaleMode(GL_NEAREST);
 
 	HorizontalLinearLayout * hl = new HorizontalLinearLayout(uiLayer.world);
 	hl->setRationalHeight(1.f);
@@ -197,11 +219,18 @@ MY_Scene::MY_Scene(Game * _game) :
 	zui->uiElements->addChild(zButton);
 
 
-	uiLayer.addChild(l);
-	l->addChild(hl);
+	uiLayer.addChild(images);
+	images->addChild(hl);
 	hl->addChild(zui);
 	hl->addChild(pad);
 	hl->addChild(xui);
+
+	flag = new Flag(box2dWorld, baseShader);
+	childTransform->addChild(flag);
+	flag->setTranslationPhysical(DISTANCE, 16/2,0);
+	flag->createFixture();
+
+	lowered = false;
 }
 
 MY_Scene::~MY_Scene(){
@@ -217,6 +246,13 @@ MY_Scene::~MY_Scene(){
 
 
 void MY_Scene::update(Step * _step){
+	//hsvComponent1->setHue(_step->time/100.f);
+	//hsvComponent2->setHue(_step->time/100.f);
+	if(keyboard->keyJustDown(GLFW_KEY_ESCAPE)){
+		game->exit();
+		return;
+	}
+
 	glm::uvec2 sd = sweet::getScreenDimensions();
 	
 	uiLayer.resize(0, sd.x/10, 0, sd.y/10);
@@ -239,101 +275,95 @@ void MY_Scene::update(Step * _step){
 		game->toggleFullScreen();
 	}
 
-	if(keyboard->keyJustDown(GLFW_KEY_1)){
-		cycleCamera();
-	}
-	
-	if (keyboard->keyJustDown(GLFW_KEY_2)){
-		box2dDebug->drawing = Transform::drawTransforms = !Transform::drawTransforms;
-		if(Transform::drawTransforms){
-			uiLayer.bulletDebugDrawer->setDebugMode(BulletDebugDrawer::DBG_MAX_DEBUG_DRAW_MODE);
-		}else{
-			uiLayer.bulletDebugDrawer->setDebugMode(BulletDebugDrawer::DBG_NoDebug);
-		}
-	}
-
-	float speed = 1;
-	MousePerspectiveCamera * cam = dynamic_cast<MousePerspectiveCamera *>(activeCamera);
-	if(cam != nullptr){
-		speed = cam->speed;
-	}
-	// camera controls
-	if (keyboard->keyDown(GLFW_KEY_UP)){
-		activeCamera->parents.at(0)->translate((activeCamera->forwardVectorRotated) * speed);
-	}
-	if (keyboard->keyDown(GLFW_KEY_DOWN)){
-		activeCamera->parents.at(0)->translate((activeCamera->forwardVectorRotated) * -speed);
-	}
-	if (keyboard->keyDown(GLFW_KEY_LEFT)){
-		activeCamera->parents.at(0)->translate((activeCamera->rightVectorRotated) * -speed);
-	}
-	if (keyboard->keyDown(GLFW_KEY_RIGHT)){
-		activeCamera->parents.at(0)->translate((activeCamera->rightVectorRotated) * speed);
-	}
-
-	if(keyboard->keyJustUp(GLFW_KEY_3)){
-		sweet::toggleAntTweakBar();
-	}
-
-	// player controls
-	glm::vec2 f(0);
-	float m = player->body->GetMass();
-	/*if (keyboard->keyJustDown(GLFW_KEY_W)){
-		f.y += 10;
-	}
-	if (keyboard->keyJustDown(GLFW_KEY_S)){
-		playerSize += 1;
-		if(playerSize > NUM_SIZES){
-			playerSize = 1;
-		}
-	}
-	if (keyboard->keyDown(GLFW_KEY_A)){
-		f.x -= 1;
-	}
-	if (keyboard->keyDown(GLFW_KEY_D)){
-		f.x += 1;
-	}*/
 
 
+	// button animations
 	if(keyboard->keyDown(GLFW_KEY_X)){
-		moving = true;
 		xButton->setCurrentAnimation("X_DOWN");
 	}else{
-		moving = false;	
 		xButton->setCurrentAnimation("X_UP");
 	}if(keyboard->keyDown(GLFW_KEY_Z)){
-		giveUp = true;
 		zButton->setCurrentAnimation("Z_DOWN");
 	}else{
 		zButton->setCurrentAnimation("Z_UP");
 	}
 
-	
-	if (keyboard->keyJustDown(GLFW_KEY_Z)){
-		playerSize += 1;
-		if(playerSize > NUM_SIZES){
-			playerSize = 1;
+	if(!giveUp){
+		// player controls
+		if(keyboard->keyDown(GLFW_KEY_X)){
+			moving = true;
+		}else{
+			moving = false;
+		}if(keyboard->keyDown(GLFW_KEY_Z)){
+			giveUp = true;
+		}else{
 		}
-	}
 
+		playerSize = clamp((int)(NUM_SIZES - ((glm::distance(player->meshTransform->getWorldPos(), flag->meshTransform->getWorldPos()))/ DISTANCE)*NUM_SIZES), 1, NUM_SIZES);
 	
-	std::stringstream anim;
-	if(moving){
-		player->body->SetLinearVelocity(b2Vec2(playerSize, 0));
-		anim << "RUN_";
-	}else{
-		player->body->SetLinearVelocity(b2Vec2(0, 0));
-		anim << "IDLE_";
-		for(unsigned long int i = 0; i < NUM_SIZES; ++i){
+		float pingPonged = (float)sweet::NumberUtils::pingPong(playerSize*2, 1, NUM_SIZES)/NUM_SIZES;
+	
+		light->setAmbientCoefficient(light->getAmbientCoefficient() + (pingPonged - light->getAmbientCoefficient())*0.01f);
+	
+		// stop the player at the last phase
+		if(playerSize >= NUM_SIZES){
+			moving = false;
+		}
+
+		if(playerSize == 10 && !lowered){
+			lowered = true;
+			for(unsigned long int i = 0; i < player->mesh->vertices.size(); ++i){
+				player->mesh->vertices.at(i).y -= 2;
+			}
+			player->mesh->dirty = true;
+		}
+
+		if(playerSize == NUM_SIZES){
+			giveUp = true;
+		}
+
+		std::stringstream anim;
+		if(moving){
+			player->body->SetLinearVelocity(b2Vec2(pingPonged*10.f, 0));
+			anim << "RUN_";
+		}else{
+			player->body->SetLinearVelocity(b2Vec2(0, 0));
+			anim << "IDLE_";
+			for(unsigned long int i = 0; i < NUM_SIZES; ++i){
+				std::stringstream ss;
+				ss << "RUN_" << (i+1);
+				player->spriteSheet->animations.at(ss.str())->frameIndices.currentAnimationTime = 0;
+				player->spriteSheet->animations.at(ss.str())->frameIndices.currentTween = 0;
+				player->spriteSheet->animations.at(ss.str())->frameIndices.currentTweenTime = 0;
+			}
+		}
+		anim << playerSize;
+		player->setCurrentAnimation(anim.str());
+
+
+		if(giveUp){
 			std::stringstream ss;
-			ss << "RUN_" << (i+1);
-			player->spriteSheet->animations.at(ss.str())->frameIndices.currentAnimationTime = 0;
-			player->spriteSheet->animations.at(ss.str())->frameIndices.currentTween = 0;
-			player->spriteSheet->animations.at(ss.str())->frameIndices.currentTweenTime = 0;
+			ss << "IDLE_" << NUM_SIZES;
+			player->setCurrentAnimation(ss.str());
+			if(!images->background->isVisible()){
+				images->background->setVisible(true);
+				while(images->background->mesh->textures.size() > 0){
+					images->background->mesh->popTexture2D();
+				}
+				images->background->mesh->pushTexture2D(MY_ResourceManager::scenario->getTexture("END")->texture);
+			}
+		
+		}
+	}else{
+		if(keyboard->keyJustDown(GLFW_KEY_X)){
+			std::stringstream ss;
+			ss << _step->time;
+			game->scenes[ss.str()] = new MY_Scene(game);
+			game->switchScene(ss.str(), true);
+		}else if(keyboard->keyJustDown(GLFW_KEY_Z)){
+			game->exit();
 		}
 	}
-	anim << playerSize;
-	player->setCurrentAnimation(anim.str());
 
 	Scene::update(_step);
 	uiLayer.update(_step);
