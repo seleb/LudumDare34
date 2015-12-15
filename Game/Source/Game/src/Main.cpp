@@ -27,7 +27,7 @@ int WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show){
 
 	Log::THROW_ON_ERROR = true;
 
-	sweet::initialize("Game");
+	sweet::initialize("Go on");
 	MY_ResourceManager::init();
 	MY_ResourceManager::load();
 	MY_Game * game = new MY_Game();

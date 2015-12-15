@@ -14,5 +14,5 @@ Flag::Flag(Box2DWorld * _world, Shader * _shader) :
 	setSpriteSheet(s, "IDLE");
 
 	mesh->setScaleMode(GL_NEAREST);
-	//createFixture();
+	createFixture(b2Filter(), b2Vec2(0,0), nullptr, true);
 }

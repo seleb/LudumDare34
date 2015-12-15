@@ -299,7 +299,7 @@ void MY_Scene::update(Step * _step){
 		}else{
 		}
 
-		playerSize = clamp((int)(NUM_SIZES - ((glm::distance(player->meshTransform->getWorldPos(), flag->meshTransform->getWorldPos()))/ DISTANCE)*NUM_SIZES), 1, NUM_SIZES);
+		playerSize = (NUM_SIZES - ((glm::distance(player->meshTransform->getWorldPos().x, flag->meshTransform->getWorldPos().x))/ DISTANCE)*NUM_SIZES)+1;
 	
 		float pingPonged = (float)sweet::NumberUtils::pingPong(playerSize*2, 1, NUM_SIZES)/NUM_SIZES;
 	
@@ -324,7 +324,7 @@ void MY_Scene::update(Step * _step){
 
 		std::stringstream anim;
 		if(moving){
-			player->body->SetLinearVelocity(b2Vec2(pingPonged*10.f, 0));
+			player->body->SetLinearVelocity(b2Vec2(pingPonged*10.f+0.1f, 0));
 			anim << "RUN_";
 		}else{
 			player->body->SetLinearVelocity(b2Vec2(0, 0));
@@ -345,14 +345,12 @@ void MY_Scene::update(Step * _step){
 			std::stringstream ss;
 			ss << "IDLE_" << NUM_SIZES;
 			player->setCurrentAnimation(ss.str());
-			if(!images->background->isVisible()){
-				images->background->setVisible(true);
-				while(images->background->mesh->textures.size() > 0){
-					images->background->mesh->popTexture2D();
-				}
-				images->background->mesh->pushTexture2D(MY_ResourceManager::scenario->getTexture("END")->texture);
+			player->body->SetLinearVelocity(b2Vec2(0, 0));
+			images->background->setVisible(true);
+			while(images->background->mesh->textures.size() > 0){
+				images->background->mesh->popTexture2D();
 			}
-		
+			images->background->mesh->pushTexture2D(MY_ResourceManager::scenario->getTexture("END")->texture);
 		}
 	}else{
 		if(keyboard->keyJustDown(GLFW_KEY_X)){
