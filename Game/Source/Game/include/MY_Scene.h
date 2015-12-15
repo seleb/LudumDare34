@@ -2,8 +2,6 @@
 
 #include <Scene.h>
 #include <UILayer.h>
-#include <BulletDebugDrawer.h>
-#include <BulletWorld.h>
 #include <Flag.h>
 
 class PerspectiveCamera;
@@ -25,7 +23,6 @@ class Sprite;
 
 class PointLight;
 
-class BulletMeshEntity;
 class ComponentShaderText;
 
 #define NUM_SIZES 11
@@ -39,18 +36,9 @@ public:
 	
 	ComponentShaderBase * baseShader;
 	ComponentShaderBase * worldspaceShader;
-	ComponentShaderText * textShader;
-	ShaderComponentHsv * hsvComponent1;
-	ShaderComponentHsv * hsvComponent2;
-
-	BulletWorld * bulletWorld;
-	BulletDebugDrawer * debugDrawer;
 	
 	OrthographicCamera * playerCam;
 	
-	Sprite * mouseIndicator;
-	Sprite * crosshair;
-	MousePerspectiveCamera * debugCam;
 	PointLight * light;
 	bool moving, giveUp;
 

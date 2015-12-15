@@ -24,8 +24,6 @@
 #include <shader\ShaderComponentMVP.h>
 #include <shader\ShaderComponentWorldSpaceUVs.h>
 
-#include <shader\ShaderComponentIndexedTexture.h>
-#include <TextureColourTable.h>
 
 #include <Box2DWorld.h>
 #include <Box2DMeshEntity.h>
@@ -46,8 +44,6 @@
 #include <StandardFrameBuffer.h>
 #include <NumberUtils.h>
 
-#include <NodeBulletBody.h>
-#include <BulletMeshEntity.h>
 #include <TextArea.h>
 #include <Box2DWorld.h>
 #include <Box2DDebugDrawer.h>
@@ -61,22 +57,15 @@ MY_Scene::MY_Scene(Game * _game) :
 	screenFBO(new StandardFrameBuffer(true)),
 	baseShader(new ComponentShaderBase(true)),
 	worldspaceShader(new ComponentShaderBase(true)),
-	textShader(new ComponentShaderText(true)),
-	debugDrawer(nullptr),
 	uiLayer(0,0,0,0),
 	box2dWorld(new Box2DWorld(b2Vec2(0.f, -10.0f))),
 	box2dDebug(new Box2DDebugDrawer(box2dWorld)),
 	moving(false),
 	giveUp(false)
 {
-	hsvComponent1 = new ShaderComponentHsv(baseShader, 0, 1, 1);
-	hsvComponent2 = new ShaderComponentHsv(worldspaceShader, 0, 1, 1);
-
-
 	baseShader->addComponent(new ShaderComponentMVP(baseShader));
 	baseShader->addComponent(new ShaderComponentTexture(baseShader));
 	baseShader->addComponent(new ShaderComponentDiffuse(baseShader));
-	baseShader->addComponent(hsvComponent1);
 	baseShader->compileShader();
 
 	
@@ -87,27 +76,14 @@ MY_Scene::MY_Scene(Game * _game) :
 	uvComponent->yMultiplier = 0.005f;
 	worldspaceShader->addComponent(uvComponent);
 	worldspaceShader->addComponent(new ShaderComponentDiffuse(worldspaceShader));
-	worldspaceShader->addComponent(hsvComponent2);
 	worldspaceShader->compileShader();
 
-	textShader->textComponent->setColor(glm::vec3(0.0f, 0.0f, 0.0f));
-
+	
 
 	// remove initial camera
 	childTransform->removeChild(cameras.at(0)->parents.at(0));
 	delete cameras.at(0)->parents.at(0);
 	cameras.pop_back();
-
-	//Set up debug camera
-	debugCam = new MousePerspectiveCamera();
-	cameras.push_back(debugCam);
-	childTransform->addChild(debugCam);
-	debugCam->farClip = 1000.f;
-	debugCam->childTransform->rotate(90, 0, 1, 0, kWORLD);
-	debugCam->parents.at(0)->translate(5.0f, 1.5f, 22.5f);
-	debugCam->yaw = 90.0f;
-	debugCam->pitch = -10.0f;
-	debugCam->speed = 1;
 
 	playerCam = new OrthographicCamera(-192/3, 192/3, -108/3, 108/3, -10, 100);
 	childTransform->addChild(playerCam);
@@ -220,23 +196,31 @@ MY_Scene::MY_Scene(Game * _game) :
 	flag->createFixture();
 
 	lowered = false;
+
+
+
+
+	
+	++baseShader->referenceCount;
+	++worldspaceShader->referenceCount;
+
+	++screenSurface->referenceCount;
+	++screenSurfaceShader->referenceCount;
+	++screenFBO->referenceCount;
 }
 
 MY_Scene::~MY_Scene(){
 	deleteChildTransform();
-	baseShader->safeDelete();
-	worldspaceShader->safeDelete();
-	textShader->safeDelete();
+	baseShader->decrementAndDelete();
+	worldspaceShader->decrementAndDelete();
 
-	screenSurface->safeDelete();
-	//screenSurfaceShader->safeDelete();
-	screenFBO->safeDelete();
+	screenSurface->decrementAndDelete();
+	screenSurfaceShader->decrementAndDelete();
+	screenFBO->decrementAndDelete();
 }
 
 
 void MY_Scene::update(Step * _step){
-	//hsvComponent1->setHue(_step->time/100.f);
-	//hsvComponent2->setHue(_step->time/100.f);
 	if(keyboard->keyJustDown(GLFW_KEY_ESCAPE)){
 		game->exit();
 		return;
@@ -259,10 +243,6 @@ void MY_Scene::update(Step * _step){
 
 	playerCam->firstParent()->translate((playerPos.x - camPos.x)*0.01f, (playerPos.y - camPos.y)*0.01f, 0);
 	ground->setTranslationPhysical(playerPos.x, groundPos.y, groundPos.z);
-	
-	if(keyboard->keyJustDown(GLFW_KEY_F12)){
-		game->toggleFullScreen();
-	}
 
 
 
