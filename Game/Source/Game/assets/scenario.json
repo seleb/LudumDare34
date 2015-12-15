@@ -31,11 +31,6 @@
       "src": "buttonBase.png.def"
     },
     {
-      "id": "DROWNY",
-      "type": "texture",
-      "src": "drowny.png"
-    },
-    {
       "id": "FLAG",
       "type": "texture",
       "src": "flag.png"
@@ -49,6 +44,11 @@
       "id": "INTRO",
       "type": "texture",
       "src": "instructions.png"
+    },
+    {
+      "id": "BGM",
+      "type": "audio",
+      "src": "bgm.ogg"
     }
   ]
 }

@@ -27,9 +27,11 @@ int WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd, int show){
 
 	Log::THROW_ON_ERROR = true;
 
-	sweet::initialize("Go on");
+	sweet::initialize("Go On");
 	MY_ResourceManager::init();
 	MY_ResourceManager::load();
+	
+	MY_ResourceManager::scenario->getAudio("BGM")->sound->play(true);
 	MY_Game * game = new MY_Game();
 
 	while (game->isRunning){
