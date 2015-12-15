@@ -51,7 +51,6 @@
 #include <TextArea.h>
 #include <Box2DWorld.h>
 #include <Box2DDebugDrawer.h>
-#include <DrownyDude.h>
 
 #include <RenderOptions.h>
 
@@ -156,16 +155,6 @@ MY_Scene::MY_Scene(Game * _game) :
 	player->setTranslationPhysical(0, 8, 0);
 
 	playerSize = 1;
-
-
-
-	/*for(unsigned long int i = 0; i < 5; ++i){
-		DrownyDude * dd = new DrownyDude(box2dWorld, baseShader);
-
-		dd->setTranslationPhysical(sweet::NumberUtils::randomInt(-3, 3), 0, 0);
-		childTransform->addChild(dd);
-	}*/
-
 
 	
 	light = new PointLight(glm::vec3(1), 0.f, 0.001f, -1.f);
